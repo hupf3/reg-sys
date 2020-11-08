@@ -1,14 +1,22 @@
 <template>
   <div>
     <div>
-      <Button type="primary" size="default" style="margin-right: 5px" @click="modal1=true">添加</Button>
+      <Select v-model="searchKey" style="width: 200px;">
+        <Option v-for="item in columns" v-if="item.title !== '操作' && item.type != 'selection'" :value="item.key" :key="`search-col-${item.key}`">{{ item.title }}</Option>
+      </Select>
+      <Input @on-change="handleClear" clearable placeholder="输入关键字搜索" style="width: 200px" v-model="searchValue"></Input>
+      {{" "}}
+      <Button @click="handleSearch" type="primary">搜索</Button>
+      {{" "}}
+      <Button type="success" size="default" style="margin-right: 5px;" @click="modal1=true">添加</Button>
       <Modal v-model="modal1" title="添加获奖公布" @on-ok="ok1" @on-cancel="cancel1">
         <Form :model="formItem" :label-width="100">
           <FormItem label="赛事名称">
             <Input v-model="formItem.name" placeholder="请填写赛事名称"></Input>
           </FormItem>
           <FormItem label="获奖公布内容">
-            <Input v-model="formItem.content" placeholder="请填写获奖公布内容"></Input>
+            <markdown-editor v-model="formItem.content" />
+            <!-- <Input v-model="formItem.content" placeholder="请填写获奖公布内容"></Input> -->
           </FormItem>
           <FormItem label="发布时间">
             <Input v-model="formItem.time" placeholder="请填写发布时间"></Input>
@@ -31,7 +39,8 @@
             <Input v-model="formItem.name" placeholder="请填写赛事名称"></Input>
           </FormItem>
           <FormItem label="获奖公布内容">
-            <Input v-model="formItem.content" placeholder="请填写获奖公布内容"></Input>
+            <markdown-editor v-model="formItem.content" />
+            <!-- <Input v-model="formItem.content" placeholder="请填写获奖公布内容"></Input> -->
           </FormItem>
           <FormItem label="发布时间">
             <Input v-model="formItem.time" placeholder="请填写发布时间"></Input>
@@ -42,12 +51,18 @@
   </div>
 </template>
 <script>
+  import MarkdownEditor from '_c/markdown'
   export default {
+    components: {
+      MarkdownEditor
+    },
     data() {
       return {
         modal1: false,
         modal2: false,
         index_t: -1,
+        searchValue: '',
+        searchKey: '',
         formItem: {
           name: '',
           content: '',
@@ -78,8 +93,9 @@
         datas: [{
           name: '康乐杯',
           content: '恭喜小王获得省级三等奖',
-          time: '2020 - 10 - 23'
-        }]
+          time: '2020.10.23'
+        }],
+        datas_t: []
       }
     },
     methods: {
@@ -127,6 +143,13 @@
         this.$Message.info('取消编辑！')
         this.clear()
         this.modal2 = false
+      },
+      handleClear(e) {
+        if (e.target.value === '') this.datas = this.datas_t
+      },
+      handleSearch() {
+        this.datas_t = this.datas
+        this.datas = this.datas_t.filter(item => item[this.searchKey].indexOf(this.searchValue) > -1)
       }
     }
   }
